@@ -88,6 +88,7 @@ declare module "@slash-graphql/lambda-types" {
     parents: Record<string, any>[] | null;
     args: Record<string, any>;
     info: InfoField;
+    accessToken: string;
   };
   
   type WebHookGraphQLEvent = GraphQLEventCommonFields & {
