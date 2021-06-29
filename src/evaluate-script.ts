@@ -9,13 +9,14 @@ import btoa from "btoa";
 import { TextDecoder, TextEncoder } from "util";
 import { Crypto } from "node-webcrypto-ossl";
 import { graphql, dql } from './dgraph';
+import { runQuery } from './test-utils';
 
-function getParents(e: GraphQLEventFields): (Record<string,any>|null)[] {
+function getParents(e: GraphQLEventFields): (Record<string, any> | null)[] {
   return e.parents || [null]
 }
 
 class GraphQLResolverEventTarget extends EventTarget {
-  addMultiParentGraphQLResolvers(resolvers: {[key: string]: (e: GraphQLEvent) => ResolverResponse}) {
+  addMultiParentGraphQLResolvers(resolvers: { [key: string]: (e: GraphQLEvent) => ResolverResponse }) {
     for (const [name, resolver] of Object.entries(resolvers)) {
       this.addEventListener(name, e => {
         const event = e as unknown as GraphQLEvent;
@@ -28,7 +29,7 @@ class GraphQLResolverEventTarget extends EventTarget {
     for (const [name, resolver] of Object.entries(resolvers)) {
       this.addEventListener(name, e => {
         const event = e as unknown as GraphQLEvent;
-        event.respondWith(getParents(event).map(parent => resolver({...event, parent})))
+        event.respondWith(getParents(event).map(parent => resolver({ ...event, parent })))
       })
     }
   }
@@ -89,25 +90,28 @@ export function evaluateScript(source: string) {
   const context = newContext(target)
   script.runInContext(context);
 
-  return async function(e: GraphQLEventFields): Promise<any | undefined> {
+  return async function (e: GraphQLEventFields): Promise<any | undefined> {
     let retPromise: ResolverResponse | undefined = undefined;
     const event = {
       ...e,
       respondWith: (x: ResolverResponse) => { retPromise = x },
-      graphql: (query: string, variables: Record<string, any>, ah?: AuthHeaderField) => graphql(query, variables, ah || e.authHeader),
-      dql,
+      graphql: (query: string, accessToken: string | undefined, variables: Record<string, any>, ah?: AuthHeaderField) => graphql(query, accessToken, variables, ah || e.authHeader),
+      dql: {
+        query: (query: string, accessToken: string | undefined, variables: Record<string, any> | undefined) => dql.query(query, accessToken, variables),
+        mutate: (mutate: string, accessToken: string | undefined) => dql.mutate(mutate, accessToken)
+      },
     }
     if (e.type === '$webhook' && e.event) {
-      event.type = `${e.event?.__typename}.${e.event?.operation}` 
+      event.type = `${e.event?.__typename}.${e.event?.operation}`
     }
     target.dispatchEvent(event)
 
-    if(retPromise === undefined) {
+    if (retPromise === undefined) {
       return undefined
     }
 
     const resolvedArray = await (retPromise as ResolverResponse);
-    if(!Array.isArray(resolvedArray) || resolvedArray.length !== getParents(e).length) {
+    if (!Array.isArray(resolvedArray) || resolvedArray.length !== getParents(e).length) {
       process.env.NODE_ENV != "test" && e.type !== '$webhook' && console.error(`Value returned from ${e.type} was not an array or of incorrect length`)
       return undefined
     }

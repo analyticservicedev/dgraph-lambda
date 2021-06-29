@@ -1,9 +1,10 @@
 import fetch from 'node-fetch';
 import { GraphQLResponse, AuthHeaderField } from '@slash-graphql/lambda-types';
 
-export async function graphql(query: string, variables: Record<string, any> = {}, authHeader?: AuthHeaderField): Promise<GraphQLResponse> {
+export async function graphql(query: string, accessToken: string | undefined, variables: Record<string, any> = {}, authHeader?: AuthHeaderField): Promise<GraphQLResponse> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (authHeader && authHeader.key && authHeader.value) {
+    headers["X-Dgraph-AccessToken"] = accessToken || "";
     headers[authHeader.key] = authHeader.value;
   }
   const response = await fetch(`${process.env.DGRAPH_URL}/graphql`, {
@@ -17,12 +18,12 @@ export async function graphql(query: string, variables: Record<string, any> = {}
   return response.json();
 }
 
-async function dqlQuery(query: string, variables: Record<string, any> = {}): Promise<GraphQLResponse> {
+async function dqlQuery(query: string, accessToken: string | undefined, variables: Record<string, any> = {}): Promise<GraphQLResponse> {
   const response = await fetch(`${process.env.DGRAPH_URL}/query`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Auth-Token": process.env.DGRAPH_TOKEN || ""
+      "X-Auth-Token": process.env.DGRAPH_TOKEN || accessToken || ""
     },
     body: JSON.stringify({ query, variables })
   })
@@ -32,12 +33,12 @@ async function dqlQuery(query: string, variables: Record<string, any> = {}): Pro
   return response.json();
 }
 
-async function dqlMutate(mutate: string | Object): Promise<GraphQLResponse> {
+async function dqlMutate(mutate: string | Object, accessToken: string | undefined): Promise<GraphQLResponse> {
   const response = await fetch(`${process.env.DGRAPH_URL}/mutate?commitNow=true`, {
     method: "POST",
     headers: {
       "Content-Type": typeof mutate === 'string' ? "application/rdf" : "application/json",
-      "X-Auth-Token": process.env.DGRAPH_TOKEN || ""
+      "X-Auth-Token": process.env.DGRAPH_TOKEN || accessToken || ""
     },
     body: typeof mutate === 'string' ? mutate : JSON.stringify(mutate)
   })

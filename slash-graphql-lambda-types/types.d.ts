@@ -65,6 +65,7 @@ declare module "@slash-graphql/lambda-types" {
     type: string,
     parents: (Record<string, any>)[] | null,
     args: Record<string, any>,
+    accessToken: string,
     authHeader?: AuthHeaderField,
     event?: eventPayload,
     info?: InfoField
@@ -75,10 +76,10 @@ declare module "@slash-graphql/lambda-types" {
   type GraphQLEventCommonFields = {
     type: string;    
     respondWith: (r: ResolverResponse) => void;
-    graphql: (s: string, vars: Record<string, any> | undefined, ah?: AuthHeaderField) => Promise<GraphQLResponse>;
+    graphql: (s: string, t: string, vars: Record<string, any> | undefined, ah?: AuthHeaderField) => Promise<GraphQLResponse>;
     dql: {
-      query: (s: string, vars: Record<string, any> | undefined) => Promise<GraphQLResponse>;
-      mutate: (s: string) => Promise<GraphQLResponse>;
+      query: (s: string, t: string, vars: Record<string, any> | undefined) => Promise<GraphQLResponse>;
+      mutate: (s: string, t: string) => Promise<GraphQLResponse>;
     };
     authHeader?: AuthHeaderField;
   };
