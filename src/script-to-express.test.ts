@@ -12,6 +12,7 @@ describe(scriptToExpress, () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+    console.dir(response)
     expect(response.body).toEqual([42]);
   })
 
