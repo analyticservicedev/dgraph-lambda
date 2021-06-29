@@ -23,7 +23,8 @@ async function dqlQuery(query: string, accessToken: string | undefined, variable
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Auth-Token": process.env.DGRAPH_TOKEN || accessToken || ""
+      "X-Auth-Token": process.env.DGRAPH_TOKEN || "",
+      "X-Dgraph-AccessToken": accessToken || ""
     },
     body: JSON.stringify({ query, variables })
   })
@@ -38,7 +39,8 @@ async function dqlMutate(mutate: string | Object, accessToken: string | undefine
     method: "POST",
     headers: {
       "Content-Type": typeof mutate === 'string' ? "application/rdf" : "application/json",
-      "X-Auth-Token": process.env.DGRAPH_TOKEN || accessToken || ""
+      "X-Auth-Token": process.env.DGRAPH_TOKEN || "",
+      "X-Dgraph-AccessToken": accessToken || ""
     },
     body: typeof mutate === 'string' ? mutate : JSON.stringify(mutate)
   })
