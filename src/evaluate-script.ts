@@ -95,10 +95,10 @@ export function evaluateScript(source: string) {
     const event = {
       ...e,
       respondWith: (x: ResolverResponse) => { retPromise = x },
-      graphql: (query: string, accessToken: string | undefined, variables: Record<string, any>, ah?: AuthHeaderField) => graphql(query, accessToken, variables, ah || e.authHeader),
+      graphql: (query: string, accessToken: string | undefined, variables: Record<string, any>, ah?: AuthHeaderField) => graphql(query, accessToken || e.accessToken, variables, ah || e.authHeader),
       dql: {
-        query: (query: string, accessToken: string | undefined, variables: Record<string, any> | undefined) => dql.query(query, accessToken, variables),
-        mutate: (mutate: string, accessToken: string | undefined) => dql.mutate(mutate, accessToken)
+        query: (query: string, accessToken: string | undefined, variables: Record<string, any> | undefined) => dql.query(query, accessToken || e.accessToken, variables),
+        mutate: (mutate: string, accessToken: string | undefined) => dql.mutate(mutate, accessToken || e.accessToken)
       },
     }
     if (e.type === '$webhook' && e.event) {
