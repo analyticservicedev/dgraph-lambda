@@ -7,7 +7,7 @@ function bodyToEvent(b: any): GraphQLEventFields {
     type: b.resolver,
     parents: b.parents || null,
     args: b.args || {},
-    authHeader: b.authHeader,
+    authHeader: { key: b.authHeader["key"] || "X-Dgraph-AccessToken", value: b.authHeader["value"] || b["X-Dgraph-AccessToken"] },
     event: b.event || {},
     info: b.info || null,
   }

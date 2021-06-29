@@ -38,7 +38,7 @@ jobs:
         # uses: docker/build-push-action@0db984c1826869dcd0740ff26ff75ff543238fd9
         uses: docker/build-push-action@v2
         with:
-          tags: dgraph/dgraph-lambda:${{ steps.get_version.outputs.tag_name }}
+          tags: valdanito/dgraph-lambda:${{ steps.get_version.outputs.tag_name }}
           push: true
           # Builder instance
           # builder: # optional
